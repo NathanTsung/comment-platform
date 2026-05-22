@@ -4,7 +4,8 @@ import { processComments } from "./utils/batchProcessor";
 import { generateSummary } from "./utils/summary";
 import "./CommentAnalysisApp.css";
 
-const ACCEPTED_TYPES = ".csv,.xlsx,.txt";
+const ACCEPTED_EXTENSIONS = [".csv", ".xlsx", ".txt"];
+const ACCEPTED_TYPES = ACCEPTED_EXTENSIONS.join(",");
 
 export default function CommentAnalysisApp() {
   // ---- state ---------------------------------------------------------------
@@ -19,7 +20,18 @@ export default function CommentAnalysisApp() {
 
   // ---- handlers ------------------------------------------------------------
   const handleFileChange = useCallback((e) => {
-    setFiles(Array.from(e.target.files));
+    const selected = Array.from(e.target.files);
+    const invalid = selected.filter(
+      (f) => !ACCEPTED_EXTENSIONS.some((ext) => f.name.toLowerCase().endsWith(ext))
+    );
+    if (invalid.length > 0) {
+      setError(
+        `Unsupported file(s): ${invalid.map((f) => f.name).join(", ")}. Accepted types: ${ACCEPTED_EXTENSIONS.join(", ")}`
+      );
+      setFiles([]);
+      return;
+    }
+    setFiles(selected);
     setError(null);
   }, []);
 
@@ -147,13 +159,15 @@ export default function CommentAnalysisApp() {
                     </td>
                     <td>{count}</td>
                   </tr>
-                  {expandedCategory === cat && (
-                    <tr>
-                      <td colSpan={2} className="expanded-cell">
-                        <ul className="comment-list">
-                          {processedComments
-                            .filter((c) => c.category === cat)
-                            .map((c) => (
+                  {expandedCategory === cat && (() => {
+                    const catComments = processedComments.filter(
+                      (c) => c.category === cat
+                    );
+                    return (
+                      <tr>
+                        <td colSpan={2} className="expanded-cell">
+                          <ul className="comment-list">
+                            {catComments.map((c) => (
                               <li key={c.commentId}>
                                 <span className="comment-id">
                                   #{c.commentId}
@@ -161,16 +175,16 @@ export default function CommentAnalysisApp() {
                                 {c.commentText}
                               </li>
                             ))}
-                          {processedComments.filter((c) => c.category === cat)
-                            .length === 0 && (
-                            <li className="no-comments">
-                              No comments in this category.
-                            </li>
-                          )}
-                        </ul>
-                      </td>
-                    </tr>
-                  )}
+                            {catComments.length === 0 && (
+                              <li className="no-comments">
+                                No comments in this category.
+                              </li>
+                            )}
+                          </ul>
+                        </td>
+                      </tr>
+                    );
+                  })()}
                 </React.Fragment>
               ))}
             </tbody>

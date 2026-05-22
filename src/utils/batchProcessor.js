@@ -21,7 +21,11 @@ export async function processComments(comments, onProgress) {
         try {
           const category = await classifyComment(comment.commentText);
           return { ...comment, category };
-        } catch {
+        } catch (err) {
+          console.error(
+            `Failed to classify comment #${comment.commentId}:`,
+            err
+          );
           return { ...comment, category: "ERROR" };
         }
       })

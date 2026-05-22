@@ -5,8 +5,9 @@
 // The function is intentionally simple so it can be swapped for any provider.
 // ---------------------------------------------------------------------------
 
-const AI_API_URL = "https://api.example.com/v1/chat/completions";
-const AI_API_KEY = "PLACEHOLDER_API_KEY";
+const AI_API_URL =
+  process.env.REACT_APP_AI_API_URL || "https://api.example.com/v1/chat/completions";
+const AI_API_KEY = process.env.REACT_APP_AI_API_KEY || "PLACEHOLDER_API_KEY";
 
 const SYSTEM_PROMPT = `You are an assistant that classifies engineering review comments.
 

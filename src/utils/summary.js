@@ -27,7 +27,8 @@ export function generateSummary(comments) {
     if (cat in categories) {
       categories[cat] += 1;
     } else {
-      categories[cat] = 1;
+      // Track unexpected categories under a generic key
+      categories["UNKNOWN"] = (categories["UNKNOWN"] || 0) + 1;
     }
   }
 
