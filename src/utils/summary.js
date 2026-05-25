@@ -11,10 +11,17 @@ const ALL_CATEGORIES = [
 ];
 
 /**
- * Generate a summary object from classified comments.
+ * Generate an enhanced summary from classified comments.
  *
- * @param {Array<{commentId: number, commentText: string, category: string}>} comments
- * @returns {{ total: number, categories: Record<string, number> }}
+ * @param {Array<{commentId: number, commentText: string, category: string, status?: string, documentName?: string}>} comments
+ * @returns {{
+ *   total: number,
+ *   categories: Record<string, number>,
+ *   mostCommonCategory: string,
+ *   pctUnresolved: number,
+ *   avgPerDocument: number,
+ *   documentCount: number
+ * }}
  */
 export function generateSummary(comments) {
   const categories = {};
@@ -22,15 +29,43 @@ export function generateSummary(comments) {
     categories[cat] = 0;
   }
 
+  const docNames = new Set();
+  let unresolvedCount = 0;
+
   for (const c of comments) {
     const cat = c.category;
     if (cat in categories) {
       categories[cat] += 1;
     } else {
-      // Track unexpected categories under a generic key
       categories["UNKNOWN"] = (categories["UNKNOWN"] || 0) + 1;
+    }
+    if (c.documentName) docNames.add(c.documentName);
+    if (c.status !== "Closed") unresolvedCount += 1;
+  }
+
+  // Find most common category
+  let mostCommonCategory = "CLARIFICATION";
+  let maxCount = 0;
+  for (const [cat, count] of Object.entries(categories)) {
+    if (count > maxCount) {
+      maxCount = count;
+      mostCommonCategory = cat;
     }
   }
 
-  return { total: comments.length, categories };
+  const documentCount = docNames.size || 1;
+  const avgPerDocument = Math.round(comments.length / documentCount);
+  const pctUnresolved =
+    comments.length > 0
+      ? Math.round((unresolvedCount / comments.length) * 100)
+      : 0;
+
+  return {
+    total: comments.length,
+    categories,
+    mostCommonCategory,
+    pctUnresolved,
+    avgPerDocument,
+    documentCount,
+  };
 }

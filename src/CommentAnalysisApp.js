@@ -7,7 +7,7 @@ import "./CommentAnalysisApp.css";
 const ACCEPTED_EXTENSIONS = [".csv", ".xlsx", ".txt"];
 const ACCEPTED_TYPES = ACCEPTED_EXTENSIONS.join(",");
 
-export default function CommentAnalysisApp() {
+export default function CommentAnalysisApp({ onShowDashboard }) {
   // ---- state ---------------------------------------------------------------
   const [files, setFiles] = useState([]);
   const [extractedComments, setExtractedComments] = useState([]);
@@ -81,7 +81,17 @@ export default function CommentAnalysisApp() {
   // ---- render --------------------------------------------------------------
   return (
     <div className="app-container">
-      <h1 className="app-title">Comment Analysis Tool</h1>
+      <header className="app-header">
+        <h1 className="app-title">Comment Analysis Tool</h1>
+        {summary && onShowDashboard && (
+          <button
+            className="btn-header-dashboard"
+            onClick={() => onShowDashboard(processedComments, summary)}
+          >
+            View Dashboard →
+          </button>
+        )}
+      </header>
 
       {/* ---------- File Upload Section ---------- */}
       <section className="section">
